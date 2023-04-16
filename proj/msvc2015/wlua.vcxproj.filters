@@ -1,0 +1,401 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="wlua">
+      <UniqueIdentifier>{78d31b11-745e-4421-aac6-2ea2852ba261}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="wlua\wsdl">
+      <UniqueIdentifier>{722a39c5-e1a0-4b68-987a-f22ccb795cf1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="wlua\ff_dec">
+      <UniqueIdentifier>{c43e6878-18a6-4fab-9c33-37fc1b84cfbb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="wlua\SDL2-2.24.1">
+      <UniqueIdentifier>{90fe6e27-6383-409e-9554-dc6c4c6e1208}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="wlua\SDL2-2.24.1\include">
+      <UniqueIdentifier>{efe4c173-733a-42b3-8d12-e5ef9ec79b9c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\ff_dec\ffdec_single.cpp">
+      <Filter>wlua\ff_dec</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ff_dec\ffdec_yuv_wav.cpp">
+      <Filter>wlua\ff_dec</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ff_dec\ffmpeg_dec.cpp">
+      <Filter>wlua\ff_dec</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ff_dec\ffmpeg_dec_audio.cpp">
+      <Filter>wlua\ff_dec</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ff_dec\ffrate_ctrl.cpp">
+      <Filter>wlua\ff_dec</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ff_dec\ffrate_ctrl_high.cpp">
+      <Filter>wlua\ff_dec</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ff_dec\ffrate_ctrl_higher.cpp">
+      <Filter>wlua\ff_dec</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ff_dec\ffrate_ctrl_low.cpp">
+      <Filter>wlua\ff_dec</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ff_dec\ffrate_ctrl_lower.cpp">
+      <Filter>wlua\ff_dec</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ff_dec\ffrate_ctrl_lowest.cpp">
+      <Filter>wlua\ff_dec</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ff_dec\ffrate_ctrl_middle.cpp">
+      <Filter>wlua\ff_dec</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ft_raster.cpp">
+      <Filter>wlua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\wlua.cpp">
+      <Filter>wlua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\wsdl\wsdl.cpp">
+      <Filter>wlua\wsdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\wsdl\wsdl_audio.cpp">
+      <Filter>wlua\wsdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\wsdl\wsdl_extension.cpp">
+      <Filter>wlua\wsdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\wsdl\wsdl_images.cpp">
+      <Filter>wlua\wsdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\wsdl\wsdl_ui_video.cpp">
+      <Filter>wlua\wsdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\wsdl\wsdl_video.cpp">
+      <Filter>wlua\wsdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\wsdl\wsdl_wnd.cpp">
+      <Filter>wlua\wsdl</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\ff_dec\ffdec_single.h">
+      <Filter>wlua\ff_dec</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ff_dec\ffdec_yuv_wav.h">
+      <Filter>wlua\ff_dec</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ff_dec\ffmpeg_dec.h">
+      <Filter>wlua\ff_dec</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ff_dec\ffmpeg_dec_audio.h">
+      <Filter>wlua\ff_dec</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ff_dec\ffmpeg_include.h">
+      <Filter>wlua\ff_dec</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ff_dec\ffrate_ctrl.h">
+      <Filter>wlua\ff_dec</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\begin_code.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\close_code.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_assert.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_atomic.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_audio.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_bits.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_blendmode.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_clipboard.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_config.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_config_android.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_config_iphoneos.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_config_macosx.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_config_minimal.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_config_pandora.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_config_psp.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_config_windows.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_config_winrt.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_config_wiz.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_copying.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_cpuinfo.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_egl.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_endian.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_error.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_events.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_filesystem.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_gamecontroller.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_gesture.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_guid.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_haptic.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_hidapi.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_hints.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_joystick.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_keyboard.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_keycode.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_loadso.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_locale.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_log.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_main.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_messagebox.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_metal.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_misc.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_mouse.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_mutex.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_name.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_opengl.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_opengl_glext.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_opengles.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_opengles2.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_opengles2_gl2.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_opengles2_gl2ext.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_opengles2_gl2platform.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_opengles2_khrplatform.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_pixels.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_platform.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_power.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_quit.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_rect.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_render.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_revision.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_rwops.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_scancode.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_sensor.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_shape.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_stdinc.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_surface.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_system.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_syswm.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_test.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_test_assert.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_test_common.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_test_compare.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_test_crc32.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_test_font.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_test_fuzzer.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_test_harness.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_test_images.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_test_log.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_test_md5.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_test_memory.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_test_random.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_thread.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_timer.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_touch.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_types.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_version.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_video.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SDL2-2.24.1\include\SDL_vulkan.h">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ft_raster.h">
+      <Filter>wlua</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\wsdl\wsdl.h">
+      <Filter>wlua\wsdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\wsdl\wsdl_audio.h">
+      <Filter>wlua\wsdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\wsdl\wsdl_extension.h">
+      <Filter>wlua\wsdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\wsdl\wsdl_images.h">
+      <Filter>wlua\wsdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\wsdl\wsdl_ui_video.h">
+      <Filter>wlua\wsdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\wsdl\wsdl_video.h">
+      <Filter>wlua\wsdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\wsdl\wsdl_wnd.h">
+      <Filter>wlua\wsdl</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\SDL2-2.24.1\include\SDL_config.h.cmake">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </None>
+    <None Include="..\..\SDL2-2.24.1\include\SDL_config.h.in">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </None>
+    <None Include="..\..\SDL2-2.24.1\include\SDL_config_macosx.h.orig">
+      <Filter>wlua\SDL2-2.24.1\include</Filter>
+    </None>
+  </ItemGroup>
+</Project>
