@@ -26,10 +26,11 @@ typedef struct wsdl_images_t_ wsdl_images_t;
 wsdl_images_t* wsdl_images_create();
 void wsdl_images_destroy(wsdl_images_t* p_imgs);
 
-int wsdl_images_load(wsdl_images_t* p_imgs, SDL_Renderer* p_render, const char* p_key, const char* p_path);
+int wsdl_images_load(wsdl_images_t* p_imgs, const char* p_key, const char* p_path);
+int wsdl_images_load_tmpimage(wsdl_images_t* p_imgs, const char* p_path);
+int wsdl_images_clear(wsdl_images_t* p_imgs);
 
-
-SDL_Texture* wsdl_images_find(wsdl_images_t* p_imgs, SDL_Renderer* p_render, const char* p_path);
+SDL_Surface* wsdl_images_find(wsdl_images_t* p_imgs, const char* p_path);
 
 
 int wsdl_images_size(wsdl_images_t* p_imgs, const char* p_path, int* p_out_w, int* p_out_h);

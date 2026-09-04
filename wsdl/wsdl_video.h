@@ -15,8 +15,7 @@
 #include "klbmem/klb_buf.h"
 #include "klbbase/klb_mnp.h"
 
-#include "ffmpeg_include.h"
-#include "ffmpeg_dec.h"
+typedef struct AVFrame AVFrame;
 
 
 #if defined(__cplusplus)
@@ -26,7 +25,7 @@ extern "C" {
 
 typedef struct wsdl_video_t_
 {
-    ffmpeg_dec_t*       p_dec;
+    void*               p_dec;
 }wsdl_video_t;
 
 
@@ -42,4 +41,4 @@ int wsdl_video_decode(wsdl_video_t* p_video, int chnn, int sidx, klb_buf_t* p_me
 #endif
 
 #endif // __WSDL_VIDEO_H__
-//end
+// end

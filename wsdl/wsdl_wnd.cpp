@@ -1,33 +1,24 @@
 ﻿#include "wsdl_wnd.h"
 #include "klbmem/klb_mem.h"
 #include "klbutil/klb_rect.h"
-#include "klbutil/klb_list.h"
+#include "wsdl_surface_canvas.h"
+#include "wsdl_images.h"
+#include "ft_raster.h"
+#include "wsdl_video_yuv.h"
+#include "wsdl_surface_canvas_opt.h"
+#include "SDL.h"
 #include <assert.h>
 
 
-#define WSDL_FONT_MAX       256
-
-
-// YUV420P
-typedef struct wsdl_texture_yuv_t_
-{
-    bool                    enable;                 ///< 是否启用
-
-    SDL_Texture*            p_tex_yuv;              ///< yuv纹理
-
-    int                     w;                      ///< 纹理宽
-    int                     h;                      ///< 纹理高
-    
-    int                     z_order;                ///< 显示次序
-
-    klb_rect_t              src;                    ///< yuv原区域
-    klb_rect_t              dst;                    ///< 显示的目标区域
-}wsdl_texture_yuv_t;
+#define DIR_PATH_TMPIMAGE           "demores/images/tmpimage/"
 
 
 typedef struct wsdl_wnd_t_
 {
     bool                    open;                   ///< 是否打开窗口
+
+    wsdl_images_t*          p_images;
+    ft_raster_t*            p_ft_raster;
 
     // 窗口/render
     struct
@@ -42,32 +33,41 @@ typedef struct wsdl_wnd_t_
     // gui/font
     struct
     {
-        SDL_Texture*        p_tex_ui;               ///< 主GUI纹理   
-        SDL_Texture*        p_tex_text;             ///< 临时文本纹理
-
-        uint32_t            draw_color;             ///< 画笔颜色
-        int                 font_h;                 ///< 字体高度
+        SDL_Texture*        p_tex_ui;               ///< 主GUI纹理
+        klb_canvas_t*       p_canvas_ui;            ///< 主GUI: wsdl_surface_canvas_create
+        SDL_Surface*        p_surface_ui;           ///< 主GUI: SDL_Surface
     };
 
-    // YUV视频
+    // 视频
     struct
     {
-        wsdl_texture_yuv_t  tex_yuv[WSDL_YUV_MAX];  ///< 视频纹理
+        wsdl_video_yuv_t*   p_video;                ///< 视频
+    };
+
+    // 其他
+    struct
+    {
+        sds                 base_path;              ///< 当前路径
     };
 }wsdl_wnd_t;
+
+//////////////////////////////////////////////////////////////////////////
+static int wsdl_wnd_refresh_rect(klb_canvas_t* p_canvas, const klb_rect_t* p_rect);
+static int wsdl_wnd_refresh(klb_canvas_t* p_canvas,
+                            const klb_rect_t dst[KLB_CANVAS_LAYER_max],
+                            klb_canvas_t* p_src_canvas[KLB_CANVAS_LAYER_max],
+                            const klb_rect_t src[KLB_CANVAS_LAYER_max],
+                            int layer_count);
+
+static int wsdl_wnd_refresh_layer(klb_canvas_t* p_canvas, int refresh_opt, const klb_canvas_layer_t layers[KLB_CANVAS_LAYER_max], int layer_count);
+static sds get_basepath_wsdl_wnd();
 
 
 wsdl_wnd_t* wsdl_wnd_create()
 {
     wsdl_wnd_t* p_wnd = KLB_MALLOCZ(wsdl_wnd_t, 1, 0);
 
-    p_wnd->draw_color = KLB_ARGB8888(255, 10, 10, 10);
-    p_wnd->font_h = 24;
-
-    for (int i = 0; i < WSDL_YUV_MAX; i++)
-    {
-        p_wnd->tex_yuv[i].enable = false;
-    }
+    p_wnd->base_path = get_basepath_wsdl_wnd();
 
     p_wnd->open = false;
 
@@ -79,6 +79,7 @@ void wsdl_wnd_destroy(wsdl_wnd_t* p_wnd)
     // 关闭窗口
     wsdl_wnd_close(p_wnd);
 
+    KLB_FREE_BY(p_wnd->base_path, sdsfree);
     KLB_FREE(p_wnd);
 }
 
@@ -97,15 +98,63 @@ int wsdl_wnd_open(wsdl_wnd_t* p_wnd, klb_gui_t* p_gui, int w, int h, const char*
     SDL_SetWindowTitle(p_wnd->p_window, p_title);
 #endif
 
+    // 初始化屏幕颜色
+    {
+        SDL_SetRenderDrawColor(p_wnd->p_render, 10, 10, 10, 255);
+        SDL_RenderClear(p_wnd->p_render);
+        SDL_RenderPresent(p_wnd->p_render);
+    }
+
     p_wnd->window_w = w;
     p_wnd->window_h = h;
 
-    p_wnd->p_tex_text = SDL_CreateTexture(p_wnd->p_render, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, w, WSDL_FONT_MAX);
-    SDL_SetTextureBlendMode(p_wnd->p_tex_text, SDL_BLENDMODE_BLEND);
 
-    p_wnd->p_tex_ui = SDL_CreateTexture(p_wnd->p_render, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET/*SDL_TEXTUREACCESS_STREAMING*/, w, h);
+    {
+        p_wnd->p_images = wsdl_images_create();
+        p_wnd->p_ft_raster = ft_raster_create();
+    }
 
+    // ui
+    {
+        p_wnd->p_tex_ui = SDL_CreateTexture(p_wnd->p_render, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, w, h);
+
+        p_wnd->p_canvas_ui = wsdl_surface_canvas_create(w, h, KLB_COLOR_FMT_ARGB8888, p_wnd->p_images, p_wnd->p_ft_raster, wsdl_wnd_refresh_rect, wsdl_wnd_refresh, wsdl_wnd_refresh_layer, p_wnd);
+        p_wnd->p_surface_ui = wsdl_surface_canvas_get_surface(p_wnd->p_canvas_ui);
+    }
+
+    // 视频
+    p_wnd->p_video = wsdl_video_yuv_create(p_wnd->p_render);
+
+
+    // 初始化其他
+    {
+        sds tmp = sdsnew("");
+
+        // 从 demores/images/tmpimage 加载, 模拟临时图片 "~/tmpimage"
+        sdsclear(tmp);
+        tmp = sdscatfmt(tmp, "%s%stmpimage.bmp", p_wnd->base_path, DIR_PATH_TMPIMAGE);
+        if (0 != wsdl_images_load_tmpimage(p_wnd->p_images, tmp))
+        {
+            sdsclear(tmp);
+            tmp = sdscatfmt(tmp, "%s%stmpimage.png", p_wnd->base_path, DIR_PATH_TMPIMAGE);
+            wsdl_images_load_tmpimage(p_wnd->p_images, tmp);
+        }
+
+        KLB_FREE_BY(tmp, sdsfree);
+    }
+
+    // ok
     p_wnd->open = true;
+
+    // test
+#if 0
+    wsdl_video_yuv_set_size(p_wnd->p_video, 1);
+
+    klb_rect_t rect = { 0 };
+    rect.w = 640;
+    rect.h = 360;
+    wsdl_video_yuv_update_rect(p_wnd->p_video, 0, &rect);
+#endif
 
     return 0;
 }
@@ -114,12 +163,13 @@ void wsdl_wnd_close(wsdl_wnd_t* p_wnd)
 {
     if (p_wnd->open)
     {
-        for (int i = 0; i < WSDL_YUV_MAX; i++)
-        {
-            KLB_FREE_BY(p_wnd->tex_yuv[i].p_tex_yuv, SDL_DestroyTexture);
-        }
+        KLB_FREE_BY(p_wnd->p_video, wsdl_video_yuv_destroy);
 
-        KLB_FREE_BY(p_wnd->p_tex_text, SDL_DestroyTexture);
+        KLB_FREE_BY(p_wnd->p_ft_raster, ft_raster_destroy);
+        KLB_FREE_BY(p_wnd->p_images, wsdl_images_destroy);
+
+        KLB_FREE_BY(p_wnd->p_canvas_ui, klb_canvas_destroy);
+
         KLB_FREE_BY(p_wnd->p_tex_ui, SDL_DestroyTexture);
         KLB_FREE_BY(p_wnd->p_render, SDL_DestroyRenderer);
         KLB_FREE_BY(p_wnd->p_window, SDL_DestroyWindow);
@@ -133,274 +183,275 @@ bool wsdl_wnd_is_open(wsdl_wnd_t* p_wnd)
     return p_wnd->open;
 }
 
-SDL_Renderer* wsdl_wnd_get_render(wsdl_wnd_t* p_wnd)
+klb_canvas_t* wsdl_wnd_get_ui_canvas(wsdl_wnd_t* p_wnd)
 {
-    return p_wnd->p_render;
+    return p_wnd->p_canvas_ui;
+}
+
+wsdl_video_yuv_t* wsdl_wnd_get_video_yuv(wsdl_wnd_t* p_wnd)
+{
+    return p_wnd->p_video;
 }
 
 void wsdl_wnd_render_present(wsdl_wnd_t* p_wnd)
 {
     if (p_wnd->open)
     {
+        SDL_SetTextureBlendMode(p_wnd->p_tex_ui, SDL_BLENDMODE_NONE);
+        SDL_RenderCopy(p_wnd->p_render, p_wnd->p_tex_ui, NULL, NULL);
+
         SDL_RenderPresent(p_wnd->p_render);
     }
 }
 
-void wsdl_wnd_refresh(wsdl_wnd_t* p_wnd)
+//////////////////////////////////////////////////////////////////////////
+
+// 获取默认启动文件路径
+static sds get_basepath_wsdl_wnd()
 {
-    SDL_SetRenderTarget(p_wnd->p_render, NULL);
+    // 路径
+    char* p_base_path = SDL_GetBasePath();
+    sds path = sdsnew(p_base_path);
+    SDL_free(p_base_path);
 
-    SDL_SetRenderDrawColor(p_wnd->p_render, 10, 10, 10, 255);
-    SDL_RenderClear(p_wnd->p_render);
+    return path;
+}
 
-    // YUV
-    for (int i = 0; i < WSDL_YUV_MAX; i++)
+static int wsdl_wnd_refresh_rect(klb_canvas_t* p_canvas, const klb_rect_t* p_rect)
+{
+    wsdl_wnd_t* p_wnd = (wsdl_wnd_t*)p_canvas->p_obj;
+
+    klb_rect_t* ptr = (NULL != p_rect) ? (klb_rect_t*)p_rect : &p_canvas->rect;
+
+    SDL_Rect rect = { 0 };
+    rect.x = ptr->x;
+    rect.y = ptr->y;
+    rect.w = ptr->w;
+    rect.h = ptr->h;
+
+    //// UI
     {
-        wsdl_texture_yuv_t* p_yuv = &(p_wnd->tex_yuv[i]);
-
-        if (p_yuv->enable && 0 < p_yuv->w  && 0 < p_yuv->h)
+        SDL_Surface* p_surface = NULL;
+        if (0 == SDL_LockTextureToSurface(p_wnd->p_tex_ui, NULL, &p_surface))
         {
-            SDL_Rect dst = { p_yuv->dst.x, p_yuv->dst.y, p_yuv->dst.w, p_yuv->dst.h };
-            SDL_RenderCopy(p_wnd->p_render, p_wnd->tex_yuv[0].p_tex_yuv, NULL, &dst);
+            // 按原始拷贝, 可能含有透明像素
+            SDL_SetSurfaceBlendMode(p_wnd->p_surface_ui, SDL_BLENDMODE_NONE);
+            SDL_BlitSurface(p_wnd->p_surface_ui, &rect, p_surface, &rect);
+
+            SDL_UnlockTexture(p_wnd->p_tex_ui);
         }
     }
 
-    // UI
+    // 拷贝至屏幕
+    SDL_SetRenderTarget(p_wnd->p_render, NULL);
+
+#if 1
+    //  按原始拷贝
+    SDL_SetTextureBlendMode(p_wnd->p_tex_ui, SDL_BLENDMODE_NONE);
+    SDL_RenderCopy(p_wnd->p_render, p_wnd->p_tex_ui, &rect, &rect);
+#else
+    //  按透明度拷贝
+    {
+        SDL_SetRenderDrawColor(p_wnd->p_render, 0, 0, 0, 0);
+        SDL_RenderFillRect(p_wnd->p_render, &rect);
+    }
+
+    SDL_SetTextureBlendMode(p_wnd->p_tex_ui, SDL_BLENDMODE_BLEND);
+    SDL_RenderCopy(p_wnd->p_render, p_wnd->p_tex_ui, &rect, &rect);
+#endif
+
+    SDL_RenderPresent(p_wnd->p_render);
+
+    return 0;
+}
+
+static int wsdl_wnd_refresh(klb_canvas_t* p_canvas,
+                            const klb_rect_t dst[KLB_CANVAS_LAYER_max],
+                            klb_canvas_t* p_src_canvas[KLB_CANVAS_LAYER_max],
+                            const klb_rect_t src[KLB_CANVAS_LAYER_max],
+                            int layer_count)
+{
+    wsdl_wnd_t* p_wnd = (wsdl_wnd_t*)p_canvas->p_obj;
+
+    SDL_Rect rect_dst[KLB_CANVAS_LAYER_max] = { 0 };
+    SDL_Rect rect_src[KLB_CANVAS_LAYER_max] = { 0 };
+
+    // 更新UI图层数据
+    SDL_Surface* p_dst_surface = NULL;
+    if (0 == SDL_LockTextureToSurface(p_wnd->p_tex_ui, NULL, &p_dst_surface))
+    {
+        for (int i = 0; i < layer_count; i++)
+        {
+            SDL_Surface* p_src_surface = wsdl_surface_canvas_get_surface(p_src_canvas[i]);
+
+            // 按原始拷贝, 可能含有透明像素
+            SDL_SetSurfaceBlendMode(p_src_surface, SDL_BLENDMODE_NONE);
+
+            // dst rect
+            rect_dst[i].x = dst[i].x;
+            rect_dst[i].y = dst[i].y;
+            rect_dst[i].w = dst[i].w;
+            rect_dst[i].h = dst[i].h;
+
+            // src rect
+            rect_src[i].x = src[i].x;
+            rect_src[i].y = src[i].y;
+            rect_src[i].w = src[i].w;
+            rect_src[i].h = src[i].h;
+
+            SDL_BlitSurface(p_src_surface, &rect_src[i], p_dst_surface, &rect_dst[i]);
+        }
+
+        SDL_UnlockTexture(p_wnd->p_tex_ui);
+    }
+
+#if 0
+    // 拷贝UI 图层
+    for (int i = 0; i < layer_count; i++)
+    {
+        //  按原始拷贝
+        SDL_SetTextureBlendMode(p_wnd->p_tex_ui, SDL_BLENDMODE_NONE);
+        SDL_RenderCopy(p_wnd->p_render, p_wnd->p_tex_ui, &rect_dst[i], &rect_dst[i]);
+    }
+
+    SDL_RenderPresent(p_wnd->p_render);
+#else
+    wsdl_wnd_render_refresh(p_wnd);
+#endif
+
+    return 0;
+}
+
+static void blit_surface_wsdl_wnd(klb_canvas_t* p_canvas, SDL_Surface* p_dst, klb_rect_t* p_rect)
+{
+    klb_rect_t rect = { 0 };
+    if (!klb_rect_intersect(&rect, p_rect, &p_canvas->rect))
+    {
+        return; // 矩形无交集
+    }
+
+    SDL_Surface* p_src_surface = wsdl_surface_canvas_get_surface(p_canvas);
+
+    // 按原始拷贝, 可能含有透明像素
+    SDL_SetSurfaceBlendMode(p_src_surface, SDL_BLENDMODE_NONE);
+
+    SDL_Rect rect_src = { 0 };
+    rect_src.x = rect.x - p_canvas->rect.x;
+    rect_src.y = rect.y - p_canvas->rect.y;
+    rect_src.w = rect.w;
+    rect_src.h = rect.h;
+
+    SDL_Rect rect_dst = { 0 };
+    rect_dst.x = rect.x;
+    rect_dst.y = rect.y;
+    rect_dst.w = rect.w;
+    rect_dst.h = rect.h;
+
+    SDL_BlitSurface(p_src_surface, &rect_src, p_dst, &rect_dst);
+}
+
+static int wsdl_wnd_refresh_layer_copy(klb_canvas_t* p_canvas, const klb_canvas_layer_t layers[KLB_CANVAS_LAYER_max], int layer_count)
+{
+    // 完全刷新
+    wsdl_wnd_t* p_wnd = (wsdl_wnd_t*)p_canvas->p_obj;
+
+    // 更新UI图层数据
+    SDL_Surface* p_dst_surface = NULL;
+    if (0 == SDL_LockTextureToSurface(p_wnd->p_tex_ui, NULL, &p_dst_surface))
+    {
+        for (int i = 0; i < layer_count; i++)
+        {
+            if (layers[i].is_used)
+            {
+                klb_rect_t redraw_rect = layers[i].redraw_rect;
+                blit_surface_wsdl_wnd(layers[i].p_canvas, p_dst_surface, &redraw_rect);
+            }
+        }
+
+        SDL_UnlockTexture(p_wnd->p_tex_ui);
+    }
+
+    wsdl_wnd_render_refresh(p_wnd);
+
+    return 0;
+}
+
+static int wsdl_wnd_refresh_layer_copy_bubble(klb_canvas_t* p_canvas, const klb_canvas_layer_t layers[KLB_CANVAS_LAYER_max], int layer_count)
+{
+    // 局部刷新
+    wsdl_wnd_t* p_wnd = (wsdl_wnd_t*)p_canvas->p_obj;
+
+    // 更新UI图层数据
+    SDL_Surface* p_dst_surface = NULL;
+    if (0 == SDL_LockTextureToSurface(p_wnd->p_tex_ui, NULL, &p_dst_surface))
+    {
+        for (int i = 0; i < layer_count; i++)
+        {
+            if (layers[i].is_used && layers[i].is_redraw)
+            {
+                klb_rect_t redraw_rect = layers[i].redraw_rect;
+
+                blit_surface_wsdl_wnd(layers[i].p_canvas, p_dst_surface, &redraw_rect);
+
+                for (int j = i + 1; j < layer_count; j++)
+                {
+                    if (layers[j].is_used)
+                    {
+                        blit_surface_wsdl_wnd(layers[j].p_canvas, p_dst_surface, &redraw_rect);
+                    }
+                }
+            }
+        }
+
+        SDL_UnlockTexture(p_wnd->p_tex_ui);
+    }
+
+    wsdl_wnd_render_refresh(p_wnd);
+
+    return 0;
+}
+
+static int wsdl_wnd_refresh_layer(klb_canvas_t* p_canvas, int refresh_opt, const klb_canvas_layer_t layers[KLB_CANVAS_LAYER_max], int layer_count)
+{
+    if (KLB_CANVAS_REFRESH_copy == refresh_opt)
+    {
+        return wsdl_wnd_refresh_layer_copy(p_canvas, layers, layer_count);
+    }
+    else if (KLB_CANVAS_REFRESH_copy_bubble == refresh_opt)
+    {
+        return wsdl_wnd_refresh_layer_copy_bubble(p_canvas, layers, layer_count);
+    }
+
+    return 0;
+}
+
+void wsdl_wnd_render_refresh(wsdl_wnd_t* p_wnd)
+{
+    // 清空屏幕
+    SDL_SetRenderDrawColor(p_wnd->p_render, 5, 5, 5, 255);
+    SDL_RenderClear(p_wnd->p_render);
+
+    // 拷贝视频图
+    int video_size = wsdl_video_yuv_size(p_wnd->p_video);
+    for (int i = 0; i < video_size; i++)
+    {
+        klb_rect_t rect_video = { 0 };
+        SDL_Texture* p_texture = wsdl_video_yuv_get(p_wnd->p_video, i, &rect_video);
+
+        SDL_Rect r_video = { 0 };
+        r_video.x = rect_video.x;  r_video.y = rect_video.y;
+        r_video.w = rect_video.w;  r_video.h = rect_video.h;
+
+        if (NULL != p_texture && 0 < r_video.w && 0 < r_video.h)
+        {
+            SDL_SetTextureBlendMode(p_texture, SDL_BLENDMODE_NONE);
+            SDL_RenderCopy(p_wnd->p_render, p_texture, NULL, &r_video);
+        }
+    }
+
+    // 拷贝UI 图层
     SDL_SetTextureBlendMode(p_wnd->p_tex_ui, SDL_BLENDMODE_BLEND);
     SDL_RenderCopy(p_wnd->p_render, p_wnd->p_tex_ui, NULL, NULL);
 
     SDL_RenderPresent(p_wnd->p_render);
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-/// @brief 设置绘制颜色
-int wsdl_wnd_set_draw_color(wsdl_wnd_t* p_wnd, uint32_t color)
-{
-    uint8_t a = (color >> 24) & 0xFF;
-    uint8_t r = (color >> 16) & 0xFF;
-    uint8_t g = (color >> 8) & 0xFF;
-    uint8_t b = (color)& 0xFF;
-
-    SDL_SetRenderDrawColor(p_wnd->p_render, r, g, b, a);
-
-    p_wnd->draw_color = color;
-
-    return 0;
-}
-
-/// @brief 获取绘制颜色
-/// @return uint32_t ARGB8888颜色值
-uint32_t wsdl_wnd_get_draw_color(wsdl_wnd_t* p_wnd)
-{
-    uint8_t a = 0, r = 0, g = 0, b = 0;
-
-    SDL_GetRenderDrawColor(p_wnd->p_render, &r, &g, &b, &a);
-
-    return KLB_ARGB8888(a, r, g, b);
-}
-
-/// @brief 设置字体高度
-int wsdl_wnd_set_font_height(wsdl_wnd_t* p_wnd, int h)
-{
-    p_wnd->font_h = h;
-    return 0;
-}
-
-/// @brief 获取字体高度
-int wsdl_wnd_get_font_height(wsdl_wnd_t* p_wnd)
-{
-    return p_wnd->font_h;
-}
-
-/// @brief 使用单色清空屏幕
-int wsdl_wnd_draw_clear(wsdl_wnd_t* p_wnd)
-{
-    SDL_SetRenderTarget(p_wnd->p_render, p_wnd->p_tex_ui);
-    SDL_RenderClear(p_wnd->p_render);
-
-    return 0;
-}
-
-/// @brief 绘制点
-int wsdl_wnd_draw_point(wsdl_wnd_t* p_wnd, int x, int y)
-{
-    return SDL_RenderDrawPoint(p_wnd->p_render, x, y);
-}
-
-/// @brief 绘制多个点
-int wsdl_wnd_draw_points(wsdl_wnd_t* p_wnd, const klb_point_t* p_points, int count)
-{
-    return 0;
-}
-
-/// @brief 绘制线段
-int wsdl_wnd_draw_line(wsdl_wnd_t* p_wnd, int x1, int y1, int x2, int y2)
-{
-    return SDL_RenderDrawLine(p_wnd->p_render, x1, y1, x2, y2);
-}
-
-/// @brief 绘制多个线段
-int wsdl_wnd_draw_lines(wsdl_wnd_t* p_wnd, const klb_point_t* p_points, int count)
-{
-    return 0;
-}
-
-/// @brief 绘制空心矩形
-int wsdl_wnd_draw_rect(wsdl_wnd_t* p_wnd, const klb_rect_t* p_rect)
-{
-    SDL_Rect rect = { p_rect->x, p_rect->y, p_rect->w, p_rect->h };
-
-    SDL_SetRenderTarget(p_wnd->p_render, p_wnd->p_tex_ui);
-    SDL_RenderDrawRect(p_wnd->p_render, &rect);
-
-    return 0;
-}
-
-/// @brief 绘制多个空心矩形
-int wsdl_wnd_draw_rects(wsdl_wnd_t* p_wnd, const klb_rect_t* p_rects, int count)
-{
-    return 0;
-}
-
-/// @brief 使用单色填充绘制单个区域
-int wsdl_wnd_draw_fill_rect(wsdl_wnd_t* p_wnd, const klb_rect_t* p_rect)
-{
-    SDL_Rect rect = { p_rect->x, p_rect->y, p_rect->w, p_rect->h };
-
-    SDL_SetRenderTarget(p_wnd->p_render, p_wnd->p_tex_ui);
-    SDL_RenderFillRect(p_wnd->p_render, &rect);
-
-    return 0;
-}
-
-/// @brief 使用单色填充多个区域
-int wsdl_wnd_draw_fill_rects(wsdl_wnd_t* p_wnd, const klb_rect_t* p_rects, int count)
-{
-    return 0;
-}
-
-int wsdl_wnd_draw_text(wsdl_wnd_t* p_wnd, ft_raster_t* p_ft, const klb_rect_t* p_rect, const char* p_utf8, int utf8_len)
-{
-    SDL_Surface* p_surface = NULL;
-
-    if (0 == SDL_LockTextureToSurface(p_wnd->p_tex_text, NULL, &p_surface))
-    {
-        SDL_Rect src_rect = { 0, 0, p_rect->w, p_rect->h };
-        SDL_FillRect(p_surface, &src_rect, KLB_ARGB8888(0, 0, 0, 0));
-
-        ft_raster_pixels_t raster = { 0 };
-
-        raster.p_pixels = (uint8_t*)p_surface->pixels;
-        raster.pitch = p_surface->pitch;
-        raster.w = p_surface->w;
-        raster.h = p_surface->h;
-        raster.color_fmt = KLB_COLOR_FMT_ARGB8888;
-
-        ft_raster_text(p_ft, &raster, 0, 0, p_rect->w, p_rect->h, p_utf8, utf8_len, p_wnd->draw_color, p_wnd->font_h);
-
-        SDL_UnlockTexture(p_wnd->p_tex_text);
-
-        // 
-        SDL_SetRenderTarget(p_wnd->p_render, p_wnd->p_tex_ui);
-
-        SDL_Rect dst_rect = { p_rect->x, p_rect->y, p_rect->w, p_rect->h };
-        SDL_RenderCopy(p_wnd->p_render, p_wnd->p_tex_text, &src_rect, &dst_rect);
-        SDL_RenderPresent(p_wnd->p_render);
-    }
-
-    return 0;
-}
-
-int wsdl_wnd_draw_image(wsdl_wnd_t* p_wnd, wsdl_images_t* p_images, const klb_rect_t* p_dst_rect, const char* p_path, const klb_rect_t* p_src_rect)
-{
-    SDL_Texture* p_tex = wsdl_images_find(p_images, p_wnd->p_render, p_path);
-
-    if (NULL == p_tex)
-    {
-        return 1;
-    }
-
-    SDL_Rect src_rect = { 0, 0, p_dst_rect->w, p_dst_rect->h };
-    SDL_Rect dst_rect = { p_dst_rect->x, p_dst_rect->y, p_dst_rect->w, p_dst_rect->h };
-
-    SDL_SetRenderTarget(p_wnd->p_render, p_wnd->p_tex_ui);
-    SDL_RenderCopy(p_wnd->p_render, p_tex, NULL/*&src_rect*/, &dst_rect);
-    SDL_RenderPresent(p_wnd->p_render);
-
-    return 0;
-}
-
-int wsdl_wnd_refresh_rect(wsdl_wnd_t* p_wnd, const klb_rect_t* p_rect)
-{
-    return 0;
-}
-
-int wsdl_wnd_refresh_rects(wsdl_wnd_t* p_wnd, const klb_rect_t* p_rects, int count)
-{
-
-    return 0;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// 视频接口
-
-int wsdl_wnd_video_update(wsdl_wnd_t* p_wnd, int idx, const AVFrame* p_frame)
-{
-    if (NULL == p_frame)
-    {
-        return 0;
-    }
-
-    wsdl_texture_yuv_t* p_tex = &(p_wnd->tex_yuv[idx]);
-
-    int w = p_frame->width;
-    int h = p_frame->height;
-
-    while (true)
-    {
-        if (NULL == p_tex->p_tex_yuv)
-        {
-            p_tex->p_tex_yuv = SDL_CreateTexture(p_wnd->p_render, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_STREAMING, w, h);
-            
-            p_tex->enable = true;
-            p_tex->w = w;
-            p_tex->h = h;
-
-            break;
-        }
-        else
-        {
-            if (w != p_tex->w || h != p_tex->h)
-            {
-                KLB_FREE_BY(p_tex->p_tex_yuv, SDL_DestroyTexture);
-
-                p_tex->enable = false;
-                p_tex->w = 0;
-                p_tex->h = 0;
-            }
-            else
-            {
-                break;
-            }
-        }
-    }
-
-    SDL_UpdateYUVTexture(p_tex->p_tex_yuv, NULL,
-        p_frame->data[0], p_frame->linesize[0],
-        p_frame->data[1], p_frame->linesize[1], 
-        p_frame->data[2], p_frame->linesize[2]);
-
-    return 0;
-}
-
-int wsdl_wnd_video_set_pos(wsdl_wnd_t* p_wnd, int idx, const klb_rect_t* p_dst_rect, const klb_rect_t* p_src_rect)
-{
-    wsdl_texture_yuv_t* p_tex = &(p_wnd->tex_yuv[idx]);
-
-    memcpy(&(p_tex->dst), p_dst_rect, sizeof(klb_rect_t));
-    //memcpy(&(p_tex->src), p_src_rect, sizeof(klb_rect_t));
-
-    return 0;
 }

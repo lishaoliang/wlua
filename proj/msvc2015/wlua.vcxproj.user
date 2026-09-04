@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommand>D:\work\my_all\klb\bin\wlua.exe</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>.\sample_klbui\main_ui_css_5.lua</LocalDebuggerCommandArguments>
-    <LocalDebuggerWorkingDirectory>..\..\..\klb\bin</LocalDebuggerWorkingDirectory>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-  </PropertyGroup>
-</Project>

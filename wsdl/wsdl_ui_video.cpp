@@ -7,7 +7,6 @@
 #include "klbutil/klb_map.h"
 #include "klbthird/sds.h"
 #include "wsdl_extension.h"
-#include "klbutil/CMap.hpp"
 
 
 
@@ -97,23 +96,23 @@ static int wsdl_ui_video_on_set(klb_wnd_t* p_wnd, const klb_map_t* p_map)
     klua_env_t* p_env = klb_gui_get_klua_env(klb_wnd_get_gui(p_wnd));
     wsdl_extension_t* p_ex = kluaex_get_wsdl(p_env);
 
-    klb::CMap r((klb_map_t*)p_map, true);
+    const char* p_cmd = klb_map_idx_to_string(p_map, 0);
 
-    if (r[0] == "picture")
+    if (NULL != p_cmd && 0 == strcmp(p_cmd, "picture"))
     {
-        p_video->pic = sdscpy(p_video->pic, r[1].ToString().c_str());
+        const char* p_pic = klb_map_idx_to_string(p_map, 1);
+        p_video->pic = sdscpy(p_video->pic, (NULL != p_pic) ? p_pic : "");
         klb_wnd_update(p_wnd);
     }
-    else if(r[0] == "index")
+    else if (NULL != p_cmd && 0 == strcmp(p_cmd, "index"))
     {
-        p_video->idx = (int)r[1].ToInt64();
+        p_video->idx = (int)klb_map_idx_to_int64(p_map, 1);
         klb_wnd_update(p_wnd);
     }
-    else if(r[0] == "dst_rect")
+    else if (NULL != p_cmd && 0 == strcmp(p_cmd, "dst_rect"))
     {
-        klb_rect_t rect = { (int)r[1].ToInt64(), (int)r[2].ToInt64(), (int)r[3].ToInt64(), (int)r[4].ToInt64() };
-
-        kluaex_wsdl_set_video_pos(p_ex, p_video->idx, &rect);
+        klb_rect_t rect = { (int)klb_map_idx_to_int64(p_map, 1), (int)klb_map_idx_to_int64(p_map, 2),
+            (int)klb_map_idx_to_int64(p_map, 3), (int)klb_map_idx_to_int64(p_map, 4) };
 
         klb_wnd_update(p_wnd);
     }
